@@ -1,6 +1,9 @@
 package app
 
-import "go.uber.org/zap"
+import (
+	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
+)
 
 type ConfigProvider interface {
 	Args() string
@@ -14,6 +17,9 @@ type ConfigProvider interface {
 	StateValuesSet() map[string]interface{}
 	StateValuesFiles() []string
 	Env() string
+
+	RunnerLogLevel() zapcore.Level
+	RunnerSkipPrefix() bool
 
 	loggingConfig
 }
