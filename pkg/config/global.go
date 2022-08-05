@@ -6,6 +6,7 @@ import (
 
 	"github.com/helmfile/helmfile/pkg/state"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 	"golang.org/x/term"
 )
 
@@ -43,6 +44,11 @@ type GlobalOptions struct {
 	AllowNoMatchingRelease bool
 	// Interactive is true if the user should be prompted for input.
 	Interactive bool
+
+	RunnerLogLevel int
+
+	RunnerSkipPrefix bool
+
 	// logger is the logger to use.
 	logger *zap.SugaredLogger
 }
@@ -124,6 +130,15 @@ func (g *GlobalImpl) StateValuesFiles() []string {
 // Interactive return interactive mode
 func (g *GlobalImpl) Interactive() bool {
 	return g.GlobalOptions.Interactive
+}
+
+
+func (g *GlobalImpl) RunnerLogLevel() zapcore.Level {
+	return zapcore.Level(g.GlobalOptions.RunnerLogLevel)
+}
+
+func (g *GlobalImpl) RunnerSkipPrefix() bool {
+	return g.GlobalOptions.RunnerSkipPrefix
 }
 
 // Logger returns the logger

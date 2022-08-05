@@ -108,6 +108,8 @@ func setGlobalOptionsForRootCmd(fs *pflag.FlagSet, globalOptions *config.GlobalO
 	fs.StringArrayVarP(&globalOptions.StateValuesSet, "state-values-set", "s", globalOptions.StateValuesSet, "set state values on the command line (can specify multiple or separate values with commas: key1=val1,key2=val2)")
 	fs.StringArrayVarP(&globalOptions.StateValuesFile, "state-values-file", "", globalOptions.StateValuesFile, "specify state values in a YAML file")
 	fs.BoolVarP(&globalOptions.Quiet, "quiet", "q", globalOptions.Quiet, "Silence output. Equivalent to log-level warn")
+	fs.BoolVar(&globalOptions.RunnerSkipPrefix, "runner-skip-prefix", globalOptions.RunnerSkipPrefix, "Skip prefixes in runner logs for prettier alignment")
+	fs.IntVar(&globalOptions.RunnerLogLevel, "runner-log-level", globalOptions.RunnerLogLevel, "The log level to use for runner's logs. -1 is debug, 0 is info ans so on.")
 	fs.StringVar(&globalOptions.KubeContext, "kube-context", globalOptions.KubeContext, "Set kubectl context. Uses current context by default")
 	fs.BoolVar(&globalOptions.Debug, "debug", globalOptions.Debug, "Enable verbose output for Helm and set log-level to debug, this disables --quiet/-q effect")
 	fs.BoolVar(&globalOptions.Color, "color", globalOptions.Color, "Output with color")
