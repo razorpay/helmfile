@@ -12,6 +12,7 @@ import (
 	"github.com/roboll/helmfile/pkg/state"
 	"github.com/urfave/cli"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 var logger *zap.SugaredLogger
@@ -47,6 +48,14 @@ func main() {
 			Name:  "helm-binary, b",
 			Usage: "path to helm binary",
 			Value: app.DefaultHelmBinary,
+		},
+		cli.BoolFlag{
+			Name:  "helm-logs-in-info",
+			Usage: "should show helm logs in info",
+		},
+		cli.BoolFlag{
+			Name:  "pretty, b",
+			Usage: "removes prefixes from log lines to maintain alignment",
 		},
 		cli.StringFlag{
 			Name:  "file, f",
@@ -991,6 +1000,18 @@ func (c configImpl) Env() string {
 		}
 	}
 	return env
+}
+
+func (c configImpl) RunnerLogLevel() zapcore.Level {
+	if c.c.GlobalBool("helm-logs-in-info") {
+		return zapcore.InfoLevel
+	} else {
+		return zapcore.DebugLevel
+	}
+}
+
+func (c configImpl) RunnerSkipPrefix() bool {
+	return c.c.GlobalBool("pretty")
 }
 
 func action(do func(*app.App, configImpl) error) func(*cli.Context) error {
