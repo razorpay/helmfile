@@ -750,11 +750,11 @@ func (a *App) getHelm(st *state.HelmState) helmexec.Interface {
 	key := createHelmKey(bin, kubectx)
 
 	if _, ok := a.helms[key]; !ok {
-		a.helms[key] = helmexec.New(bin, a.Logger, kubectx, &helmexec.ShellRunner{
+		a.helms[key] = helmexec.NewWithSuppress(bin, a.Logger, kubectx, &helmexec.ShellRunner{
 			Logger:     a.Logger,
 			Level:      a.RunnerLogLevel,
 			SkipPrefix: a.RunnerSkipPrefix,
-		})
+		}, a.Logger.Desugar().Core().Enabled(a.RunnerLogLevel))
 	}
 
 	return a.helms[key]

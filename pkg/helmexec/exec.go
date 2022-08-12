@@ -33,6 +33,7 @@ type execer struct {
 	decryptedSecretMutex sync.Mutex
 	decryptedSecrets     map[string]*decryptedSecret
 	writeTempFile        func([]byte) (string, error)
+	suppressOutput		 bool
 }
 
 func NewLogger(writer io.Writer, logLevel string) *zap.SugaredLogger {
@@ -94,6 +95,12 @@ func redactedURL(chart string) string {
 // New for running helm commands
 // nolint: golint
 func New(helmBinary string, logger *zap.SugaredLogger, kubeContext string, runner Runner) *execer {
+	return NewWithSuppress(helmBinary, logger, kubeContext, runner, false)
+}
+
+// NewWithSuppress for running helm commands
+// nolint: golint
+func NewWithSuppress(helmBinary string, logger *zap.SugaredLogger, kubeContext string, runner Runner, suppressOutput bool) *execer {
 	// TODO: proper error handling
 	version, err := getHelmVersion(helmBinary, runner)
 	if err != nil {
@@ -106,6 +113,7 @@ func New(helmBinary string, logger *zap.SugaredLogger, kubeContext string, runne
 		kubeContext:      kubeContext,
 		runner:           runner,
 		decryptedSecrets: make(map[string]*decryptedSecret),
+		suppressOutput:   suppressOutput,
 	}
 }
 
@@ -217,7 +225,9 @@ func (helm *execer) SyncRelease(context HelmContext, name, chart string, flags .
 	}
 
 	out, err := helm.exec(append(append(preArgs, "upgrade", "--install", "--reset-values", name, chart), flags...), env)
-	helm.write(nil, out)
+	if !helm.suppressOutput {
+		helm.write(nil, out)
+	}
 	return err
 }
 
@@ -253,7 +263,9 @@ func (helm *execer) List(context HelmContext, filter string, flags ...string) (s
 		lines = lines[1:]
 		out = []byte(strings.Join(lines, "\n"))
 	}
-	helm.write(nil, out)
+	if !helm.suppressOutput {
+		helm.write(nil, out)
+	}
 	return string(out), err
 }
 
