@@ -12,6 +12,7 @@ import (
 	"syscall"
 
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // Runner interface for shell commands
@@ -24,7 +25,9 @@ type Runner interface {
 type ShellRunner struct {
 	Dir string
 
-	Logger *zap.SugaredLogger
+	Logger     *zap.SugaredLogger
+	Level      zapcore.Level
+	SkipPrefix bool
 }
 
 // Execute a shell command
@@ -33,7 +36,9 @@ func (shell ShellRunner) Execute(cmd string, args []string, env map[string]strin
 	preparedCmd.Dir = shell.Dir
 	preparedCmd.Env = mergeEnv(os.Environ(), env)
 	return Output(preparedCmd, &logWriterGenerator{
-		log: shell.Logger,
+		log:        shell.Logger,
+		level:      shell.Level,
+		skipPrefix: shell.SkipPrefix,
 	})
 }
 
@@ -44,7 +49,9 @@ func (shell ShellRunner) ExecuteStdIn(cmd string, args []string, env map[string]
 	preparedCmd.Env = mergeEnv(os.Environ(), env)
 	preparedCmd.Stdin = stdin
 	return Output(preparedCmd, &logWriterGenerator{
-		log: shell.Logger,
+		log:        shell.Logger,
+		level:      shell.Level,
+		skipPrefix: shell.SkipPrefix,
 	})
 }
 

@@ -20,6 +20,7 @@ import (
 	"github.com/helmfile/helmfile/pkg/state"
 	"github.com/variantdev/vals"
 	"go.uber.org/zap"
+	"go.uber.org/zap/zapcore"
 )
 
 // App is the main application object.
@@ -35,6 +36,9 @@ type App struct {
 	Args        string
 	ValuesFiles []string
 	Set         map[string]interface{}
+
+	RunnerLogLevel   string
+	RunnerSkipPrefix bool
 
 	FileOrDir string
 
@@ -80,6 +84,11 @@ func New(conf ConfigProvider) *App {
 		FileOrDir:           conf.FileOrDir(),
 		ValuesFiles:         conf.StateValuesFiles(),
 		Set:                 conf.StateValuesSet(),
+		RunnerLogLevel:      conf.RunnerLogLevel(),
+		RunnerSkipPrefix:    conf.RunnerSkipPrefix(),
+		//helmExecer: helmexec.New(conf.HelmBinary(), conf.Logger(), conf.KubeContext(), &helmexec.ShellRunner{
+		//	Logger: conf.Logger(),
+		//}),
 	})
 }
 
@@ -741,9 +750,15 @@ func (a *App) getHelm(st *state.HelmState) helmexec.Interface {
 	key := createHelmKey(bin, kubectx)
 
 	if _, ok := a.helms[key]; !ok {
-		a.helms[key] = helmexec.New(bin, a.Logger, kubectx, &helmexec.ShellRunner{
-			Logger: a.Logger,
-		})
+		var runnerLogLevel zapcore.Level
+		if err := runnerLogLevel.Set(a.RunnerLogLevel); err != nil {
+			a.Logger.Panicf("param runner-log-level is not a valid level (debug, info, ...). Error: %v", err)
+		}
+		a.helms[key] = helmexec.NewWithSuppress(bin, a.Logger, kubectx, &helmexec.ShellRunner{
+			Logger:     a.Logger,
+			Level:      runnerLogLevel,
+			SkipPrefix: a.RunnerSkipPrefix,
+		}, a.Logger.Desugar().Core().Enabled(runnerLogLevel))
 	}
 
 	return a.helms[key]
