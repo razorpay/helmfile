@@ -6,7 +6,6 @@ import (
 
 	"github.com/helmfile/helmfile/pkg/state"
 	"go.uber.org/zap"
-	"go.uber.org/zap/zapcore"
 	"golang.org/x/term"
 )
 
@@ -45,7 +44,7 @@ type GlobalOptions struct {
 	// Interactive is true if the user should be prompted for input.
 	Interactive bool
 
-	RunnerLogLevel int
+	RunnerLogLevel string
 
 	RunnerSkipPrefix bool
 
@@ -133,8 +132,8 @@ func (g *GlobalImpl) Interactive() bool {
 }
 
 
-func (g *GlobalImpl) RunnerLogLevel() zapcore.Level {
-	return zapcore.Level(g.GlobalOptions.RunnerLogLevel)
+func (g *GlobalImpl) RunnerLogLevel() string {
+	return g.GlobalOptions.RunnerLogLevel
 }
 
 func (g *GlobalImpl) RunnerSkipPrefix() bool {

@@ -37,7 +37,7 @@ type App struct {
 	ValuesFiles []string
 	Set         map[string]interface{}
 
-	RunnerLogLevel   zapcore.Level
+	RunnerLogLevel   string
 	RunnerSkipPrefix bool
 
 	FileOrDir string
@@ -750,11 +750,15 @@ func (a *App) getHelm(st *state.HelmState) helmexec.Interface {
 	key := createHelmKey(bin, kubectx)
 
 	if _, ok := a.helms[key]; !ok {
+		var runnerLogLevel zapcore.Level
+		if err := runnerLogLevel.Set(a.RunnerLogLevel); err != nil {
+			a.Logger.Panicf("param runner-log-level is not a valid level (debug, info, ...). Error: %v", err)
+		}
 		a.helms[key] = helmexec.NewWithSuppress(bin, a.Logger, kubectx, &helmexec.ShellRunner{
 			Logger:     a.Logger,
-			Level:      a.RunnerLogLevel,
+			Level:      runnerLogLevel,
 			SkipPrefix: a.RunnerSkipPrefix,
-		}, a.Logger.Desugar().Core().Enabled(a.RunnerLogLevel))
+		}, a.Logger.Desugar().Core().Enabled(runnerLogLevel))
 	}
 
 	return a.helms[key]
